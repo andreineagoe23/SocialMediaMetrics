@@ -20,7 +20,7 @@ def get_youtube_data():
     url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={CHANNEL_ID}&key={YOUTUBE_API_KEY}"
     response = requests.get(url)
     data = response.json()
-
+    print(f"YouTube API response: {data}")
     if "items" in data and len(data["items"]) > 0:
         stats = data["items"][0]["statistics"]
         subscriber_count = int(stats["subscriberCount"])
@@ -83,7 +83,7 @@ def get_youtube_data():
 def get_mixcloud_data():
     url = f'https://api.mixcloud.com/{USER_ID}/?metadata=1&access_token={ACCESS_TOKEN}'
     response = requests.get(url)
-    
+    print(f"Mixcloud API response: {response.json()}")
     if response.status_code == 200:
         data = response.json()
         mixcloud_data = []
@@ -139,19 +139,23 @@ def get_mixcloud_data():
 def update_google_sheets():
     subscribers, total_views, total_likes, total_comments, video_details = get_youtube_data()
     mixcloud_data = get_mixcloud_data()
-    
+
     # Write summary data to Google Sheets
+    print("Adding YouTube summary data to Google Sheets...")
     sheet.append_row(["Date", "Platform", "Subscribers", "Total Views", "Total Likes", "Total Comments"])
     sheet.append_row([datetime.now().strftime("%Y-%m-%d"), "YouTube", subscribers, total_views, total_likes, total_comments])
-    
+
     # Add headers for video details section
+    print("Adding video details headers to Google Sheets...")
     sheet.append_row(["Publish Date", "Platform", "Video Title", "Views", "Likes", "Comments", "Tags"])
-    
+
     # Append each video's data
+    print(f"Adding {len(video_details)} videos to Google Sheets...")
     for video in video_details:
         sheet.append_row(video)
 
     # Append Mixcloud data
+    print("Adding Mixcloud data to Google Sheets...")
     sheet.append_row(["Date", "Platform", "Followers", "Following", "Cloudcasts", "Favorites", "Listens"])
     for entry in mixcloud_data:
         sheet.append_row(entry)
@@ -159,5 +163,6 @@ def update_google_sheets():
     print("YouTube data added to Google Sheets.")
     print("Mixcloud data added to Google Sheets.")
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     update_google_sheets()
